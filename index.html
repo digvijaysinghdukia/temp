@@ -42,22 +42,22 @@
     const options = {
       enableHighAccuracy: true,
       maximumAge: 0,
-      timeout: 500000
+      timeout: 5000
     };
 
     const targetLocation = {
-      latitude:27.6467094,
-      longitude:75.0481551,
-      accuracy: 10
+      latitude:27.64581,
+      longitude:75.049903,
+      accuracy: 100
     };
 
     const watchId = navigator.geolocation.watchPosition(
       position => {
         const distance = calculateDistance(position.coords.latitude, position.coords.longitude, targetLocation.latitude, targetLocation.longitude);
         if (distance <= targetLocation.accuracy) {
-          alert("Hello! You are within in the range.");
+          alert("Hello! You are within the 100-meter range.");
         } else {
-          alert("out");
+          alert("You are outside the 100-meter range.");
           stopLocationTracking(watchId);
         }
       },

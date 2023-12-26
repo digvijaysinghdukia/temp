@@ -48,16 +48,16 @@
     const targetLocation = {
       latitude:27.64581,
       longitude:75.049903,
-      accuracy: 10
+      accuracy: 20
     };
 
     const watchId = navigator.geolocation.watchPosition(
       position => {
         const distance = calculateDistance(position.coords.latitude, position.coords.longitude, targetLocation.latitude, targetLocation.longitude);
         if (distance <= targetLocation.accuracy) {
-          alert("Hello! You are within the 10-meter range.");
+          alert("Hello! You are within the 20-meter range.");
         } else {
-          alert("You are outside the 10-meter range.");
+          alert("You are outside the 20-meter range.");
           stopLocationTracking(watchId);
         }
       },

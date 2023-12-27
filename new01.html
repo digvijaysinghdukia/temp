@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Authorizer</title>
+</head>
+<body>
+
+<h2>Location Authorizer</h2>
+<p>Enter target coordinates and range:</p>
+
+<label for="latitude">Latitude:</label>
+<input type="text" id="latitude" placeholder="Enter latitude">
+
+<label for="longitude">Longitude:</label>
+<input type="text" id="longitude" placeholder="Enter longitude">
+
+<label for="range">Range (in meters):</label>
+<input type="text" id="range" placeholder="Enter range">
+
+<button onclick="startLocationTracking()">Start Tracking</button>
+
+<script>
+  function startLocationTracking() {
+    const targetLatitude = parseFloat(document.getElementById("latitude").value);
+    const targetLongitude = parseFloat(document.getElementById("longitude").value);
+    const range = parseFloat(document.getElementById("range").value);
+
+    if (isNaN(targetLatitude) || isNaN(targetLongitude) || isNaN(range)) {
+      alert("Please enter valid latitude, longitude, and range values.");
+      return;
+    }
+
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' })
+        .then(permissionStatus => {
+          if (permissionStatus.state === 'granted') {
+            watchLocation(targetLatitude, targetLongitude, range);
+          } else if (permissionStatus.state === 'prompt') {
+            requestLocationPermission(targetLatitude, targetLongitude, range);
+          } else {
+            alert("Location permission denied. Please grant permission to use this feature.");
+          }
+        });
+    } else {
+      alert("Geolocation permissions not supported in this browser.");
+    }
+  }
+
+  function requestLocationPermission(targetLatitude, targetLongitude, range) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        alert("Permission granted. You can now start location tracking.");
+        watchLocation(targetLatitude, targetLongitude, range);
+      },
+      error => {
+        alert("Permission denied. Location tracking cannot be started.");
+      },
+      { enableHighAccuracy: true }
+    );
+  }
+
+  function watchLocation(targetLatitude, targetLongitude, range) {
+    const options = {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000
+    };
+
+    const watchId = navigator.geolocation.watchPosition(
+      position => {
+        const distance = calculateDistance(position.coords.latitude, position.coords.longitude, targetLatitude, targetLongitude);
+        if (distance <= range) {
+          alert("You are within the specified range.");
+        } else {
+          alert("You are outside the specified range.");
+          stopLocationTracking(watchId);
+        }
+      },
+      error => {
+        alert("Error getting location: " + error.message);
+        stopLocationTracking(watchId);
+      },
+      options
+    );
+  }
+
+  function stopLocationTracking(watchId) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+      ;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c * 1000; // Distance in meters
+    return distance;
+  }
+
+  function deg2rad(deg) {
+    return deg * (Math.PI / 180);
+  }
+</script>
+
+</body>
+</html>
